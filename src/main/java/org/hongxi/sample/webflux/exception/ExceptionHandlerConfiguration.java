@@ -27,8 +27,7 @@ public class ExceptionHandlerConfiguration {
             ObjectProvider<ViewResolver> viewResolversProvider,
             ServerCodecConfigurer serverCodecConfigurer) {
         DefaultExceptionHandler exceptionHandler = new DefaultExceptionHandler(
-                errorAttributes, resources,
-                serverProperties.getError(), applicationContext);
+                errorAttributes, resources, serverProperties.getError(), applicationContext);
         exceptionHandler.setViewResolvers(viewResolversProvider.orderedStream().collect(Collectors.toList()));
         exceptionHandler.setMessageWriters(serverCodecConfigurer.getWriters());
         exceptionHandler.setMessageReaders(serverCodecConfigurer.getReaders());
