@@ -54,21 +54,6 @@ public class FluxTests {
         return "OK";
     }
 
-    public Mono<User> requestUserData(String sessionId) {
-        return Mono.defer(() ->
-                isValidSession(sessionId)
-                        ? Mono.fromCallable(() -> requestUser(sessionId))
-                        : Mono.error(new RuntimeException("Invalid user session")));
-    }
-
-    private boolean isValidSession(String sessionId) {
-        return sessionId != null;
-    }
-
-    private User requestUser(String sessionId) {
-        return new User();
-    }
-
     @Test
     public void subscribeExample() {
         Flux.range(1, 5).subscribe(System.out::println);
@@ -106,7 +91,7 @@ public class FluxTests {
 
     @Test
     public void customSubscriberExample() {
-        Subscriber<String> subscriber = new Subscriber<String>() {
+        Subscriber<String> subscriber = new Subscriber<>() {
             volatile Subscription subscription;
 
             @Override
@@ -141,7 +126,7 @@ public class FluxTests {
     @Test
     public void baseSubscriberExample() {
         Flux<String> stream = Flux.just("Hello", "world", "!");
-        stream.subscribe(new BaseSubscriber<String>() {
+        stream.subscribe(new BaseSubscriber<>() {
             @Override
             protected void hookOnSubscribe(Subscription subscription) {
                 System.out.println("initial request for 1 element");
@@ -225,6 +210,21 @@ public class FluxTests {
                 .verify();
     }
 
+    private Mono<User> requestUserData(String sessionId) {
+        return Mono.defer(() ->
+                isValidSession(sessionId)
+                        ? Mono.fromCallable(() -> requestUser(sessionId))
+                        : Mono.error(new RuntimeException("Invalid user session")));
+    }
+
+    private boolean isValidSession(String sessionId) {
+        return sessionId != null;
+    }
+
+    private User requestUser(String sessionId) {
+        return new User();
+    }
+
     @Test
     public void startStopStreamProcessing() throws Exception {
         Mono<?> startCommand = Mono.delay(Duration.ofSeconds(1));
@@ -296,14 +296,14 @@ public class FluxTests {
     @Test
     public void reduceExample() {
         Flux.range(1, 5)
-                .reduce(0, (a, b) -> a + b)
+                .reduce(0, Integer::sum)
                 .subscribe(System.out::println);
     }
 
     @Test
     public void scanExample() {
         Flux.range(1, 5)
-                .scan(0, (a, b) -> a + b)
+                .scan(0, Integer::sum)
                 .subscribe(System.out::println);
     }
 
@@ -383,12 +383,6 @@ public class FluxTests {
                                 System.out.println(groupFlux.key() + ": " + data)));
     }
 
-    private Flux<String> requestBooks(String user) {
-        return Flux.range(1, random.nextInt(3) + 1)
-                .delayElements(Duration.ofMillis(3))
-                .map(i -> "book-" + i);
-    }
-
     @Test
     public void flatMapExample() throws InterruptedException {
         Flux.just("user-1", "user-2", "user-3")
@@ -397,6 +391,12 @@ public class FluxTests {
                 .subscribe(System.out::println);
 
         Thread.sleep(1000);
+    }
+
+    private Flux<String> requestBooks(String user) {
+        return Flux.range(1, random.nextInt(3) + 1)
+                .delayElements(Duration.ofMillis(3))
+                .map(i -> "book-" + i);
     }
 
     @Test
@@ -414,6 +414,14 @@ public class FluxTests {
         Flux.just(1, 2, 3)
                 .concatWith(Flux.error(new RuntimeException("Conn error")))
                 .doOnEach(System.out::println)
+                .subscribe();
+    }
+
+    @Test
+    public void doOnExample2() {
+        Mono.error(new RuntimeException("test exception"))
+                .doOnSuccess(signal -> System.out.println("success"))
+                .doOnError(cause -> System.out.println("error: " + cause.getMessage()))
                 .subscribe();
     }
 
@@ -451,8 +459,7 @@ public class FluxTests {
         Flux.create(emitter -> {
             emitter.onDispose(() -> System.out.println("Disposed"));
             // push events to emitter
-        })
-                .subscribe(System.out::println);
+        }).subscribe(System.out::println);
 
         Thread.sleep(1000);
     }
