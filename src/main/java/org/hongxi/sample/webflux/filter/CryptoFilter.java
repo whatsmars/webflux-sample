@@ -12,9 +12,9 @@ import reactor.core.publisher.Mono;
  * Created by shenhongxi on 2021/4/29.
  */
 @Slf4j
-@Order(-2)
+@Order(-1)
 @Component
-public class SessionFilter implements WebFilter {
+public class CryptoFilter implements WebFilter {
 
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, WebFilterChain chain) {

@@ -1,6 +1,7 @@
 package org.hongxi.sample.webflux.filter;
 
 import lombok.extern.slf4j.Slf4j;
+import org.hongxi.sample.webflux.support.WebUtils;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 import org.springframework.web.server.ServerWebExchange;
@@ -8,13 +9,11 @@ import org.springframework.web.server.WebFilter;
 import org.springframework.web.server.WebFilterChain;
 import reactor.core.publisher.Mono;
 
-import static org.hongxi.sample.webflux.support.RequestAttributes.START_TIMESTAMP;
-
 /**
  * Created by shenhongxi on 2021/4/22.
  */
 @Slf4j
-@Order(-1)
+@Order(-3)
 @Component
 public class MonitorFilter implements WebFilter {
 
@@ -28,13 +27,13 @@ public class MonitorFilter implements WebFilter {
 
     private void preHandle(ServerWebExchange exchange) {
         log.info("preHandle");
-        exchange.getAttributes().put(START_TIMESTAMP, System.currentTimeMillis());
+        exchange.getAttributes().put(WebUtils.START_TIMESTAMP_ATTR, System.currentTimeMillis());
 //        throw new RuntimeException("test exception");
     }
 
     private void postHandle(ServerWebExchange exchange, Throwable throwable) {
         log.info("postHandle");
-        Long start = exchange.getAttribute(START_TIMESTAMP);
+        Long start = exchange.getAttribute(WebUtils.START_TIMESTAMP_ATTR);
         if (start != null) {
             long cost = System.currentTimeMillis() - start;
             log.info("uri: {}, cost: {}, error: {}",
