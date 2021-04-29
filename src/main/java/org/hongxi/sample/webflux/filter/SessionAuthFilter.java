@@ -2,6 +2,8 @@ package org.hongxi.sample.webflux.filter;
 
 import lombok.extern.slf4j.Slf4j;
 import org.hongxi.sample.webflux.exception.BusinessException;
+import org.hongxi.sample.webflux.support.SessionContext;
+import org.hongxi.sample.webflux.support.WebUtils;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
@@ -20,7 +22,11 @@ public class SessionAuthFilter implements WebFilter {
 
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, WebFilterChain chain) {
-        String userId = exchange.getRequest().getQueryParams().getFirst("userId");
+        SessionContext sessionContext = exchange.getAttribute(WebUtils.SESSION_CONTEXT_ATTR);
+        if (sessionContext == null) {
+            throw new BusinessException(403, "请先登录");
+        }
+        String userId = sessionContext.getUserId();
         log.info("userId: {}", userId);
         if (!StringUtils.hasLength(userId)) {
             throw new BusinessException(403, "请先登录");
