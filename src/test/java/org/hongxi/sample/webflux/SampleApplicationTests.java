@@ -30,8 +30,7 @@ class SampleApplicationTests {
 				.contentType(MediaType.APPLICATION_JSON)
 				.body(BodyInserters.fromObject(order))
 				.exchange()
-				.expectStatus().isCreated()
-				.expectHeader().valueEquals("location", "/order/123456");
+				.expectStatus().isOk();
 	}
 
 //	@Test
