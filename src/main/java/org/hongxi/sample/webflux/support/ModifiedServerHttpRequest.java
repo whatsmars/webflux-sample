@@ -12,13 +12,13 @@ import java.util.Map;
 /**
  * Created by shenhongxi on 2021/4/29.
  */
-public class SimpleServerHttpRequestDecorator extends ServerHttpRequestDecorator {
+public class ModifiedServerHttpRequest extends ServerHttpRequestDecorator {
 
     private Map<String, Object> params;
 
     private Flux<DataBuffer> body;
 
-    public SimpleServerHttpRequestDecorator(ServerHttpRequest delegate, Map<String, Object> params) {
+    public ModifiedServerHttpRequest(ServerHttpRequest delegate, Map<String, Object> params) {
         super(delegate);
         this.params = params;
 

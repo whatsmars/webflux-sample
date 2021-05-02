@@ -22,9 +22,9 @@ public abstract class JacksonUtils {
         }
     }
 
-    public static  <T> T deserialize(byte[] src, Class<T> clazz) {
+    public static <T> T deserialize(byte[] src, Class<T> clazz) {
         try {
-            return objectMapper.readValue(new String(src), clazz);
+            return objectMapper.readValue(new String(src, StandardCharsets.UTF_8), clazz);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }

@@ -9,8 +9,6 @@ public class Order {
 
     private Long start;
 
-    private Long end;
-
     public Order() {
     }
 

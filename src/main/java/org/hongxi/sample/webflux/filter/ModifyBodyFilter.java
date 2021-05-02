@@ -5,6 +5,7 @@ import org.hongxi.sample.webflux.support.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.MediaType;
+import org.springframework.http.codec.ServerCodecConfigurer;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.http.server.reactive.ServerHttpResponse;
 import org.springframework.stereotype.Component;
@@ -21,12 +22,14 @@ import java.util.Map;
 @Slf4j
 @Order(-1)
 @Component
-public class CryptoFilter implements WebFilter {
+public class ModifyBodyFilter implements WebFilter {
 
     @Autowired
     private Crypto crypto;
+    @Autowired
+    private ServerCodecConfigurer codecConfigurer;
 
-    public CryptoFilter(Crypto crypto) {
+    public ModifyBodyFilter(Crypto crypto) {
         this.crypto = crypto;
     }
 
@@ -47,11 +50,11 @@ public class CryptoFilter implements WebFilter {
     private ServerWebExchange decorate(ServerWebExchange exchange, Map<String, Object> params) {
         MediaType contentType = exchange.getRequest().getHeaders().getContentType();
         if (contentType != null && contentType.isCompatibleWith(MediaType.APPLICATION_JSON)) {
-            ServerHttpRequest serverHttpRequest = new SimpleServerHttpRequestDecorator(exchange.getRequest(), params);
-            ServerHttpResponse serverHttpResponse = new SimpleServerHttpResponseDecorator(exchange.getResponse(), crypto);
+            ServerHttpRequest serverHttpRequest = new ModifiedServerHttpRequest(exchange.getRequest(), params);
+            ServerHttpResponse serverHttpResponse = new ModifiedServerHttpResponse(exchange, codecConfigurer.getReaders(), crypto);
             return exchange.mutate().request(serverHttpRequest).response(serverHttpResponse).build();
         } else {
-            return new SimpleServerWebExchangeDecorator(exchange, params);
+            return new ModifiedServerWebExchange(exchange, params);
         }
     }
 }

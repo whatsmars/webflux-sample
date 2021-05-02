@@ -1,5 +1,6 @@
 package org.hongxi.sample.webflux;
 
+import org.hamcrest.MatcherAssert;
 import org.hamcrest.Matchers;
 import org.hongxi.sample.webflux.model.Order;
 import org.junit.Assert;
@@ -28,7 +29,7 @@ class SampleApplicationTests {
 				.post()
 				.uri("/order/create?userId=123")
 				.contentType(MediaType.APPLICATION_JSON)
-				.body(BodyInserters.fromObject(order))
+				.body(BodyInserters.fromValue(order))
 				.exchange()
 				.expectStatus().isOk();
 	}
@@ -52,7 +53,7 @@ class SampleApplicationTests {
 				.exchange()
 				.expectStatus().isOk()
 				.expectBody(Order.class)
-				.consumeWith(e -> Assert.assertThat(e.getResponseBody(), Matchers.hasProperty("id", Matchers.equalTo("123456"))));
+				.consumeWith(e -> MatcherAssert.assertThat(e.getResponseBody(), Matchers.hasProperty("id", Matchers.equalTo("123456"))));
 	}
 
 }

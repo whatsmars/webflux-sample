@@ -24,11 +24,12 @@ public class Crypto {
 
     /**
      * 模拟加密逻辑：添加一个响应参数 end
-     * @param params
+     * @param data
      * @return
      */
-    public Map<String, Object> encrypt(Map<String, Object> params) {
-        params.remove("end");
-        return params;
+    public byte[] encrypt(byte[] data) {
+        Map<String, Object> result = JacksonUtils.deserialize(data, Map.class);
+        result.put("end", System.currentTimeMillis());
+        return JacksonUtils.serialize(result);
     }
 }
