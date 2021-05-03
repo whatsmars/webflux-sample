@@ -59,6 +59,7 @@ public class MonitorFilter implements WebFilter, InitializingBean {
             exchange.getAttributes().put(WebUtils.URI_PATTERN_ATTR, uriPattern);
         }
 //        throw new RuntimeException("test exception");
+        // you can record monitor data
     }
 
     private void postHandle(ServerWebExchange exchange, Throwable throwable) {
@@ -86,7 +87,7 @@ public class MonitorFilter implements WebFilter, InitializingBean {
     }
 
     private String getUriPattern(ServerWebExchange exchange) {
-        String uri = exchange.getAttribute(WebUtils.REQUEST_URI_ATTR);
+        String uri = exchange.getRequest().getPath().value();
         if (!StringUtils.hasLength(uri)) {
             return UNKNOWN_URI;
         }
