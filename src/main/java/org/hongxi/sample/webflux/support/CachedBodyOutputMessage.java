@@ -10,12 +10,9 @@ import org.springframework.core.io.buffer.DataBuffer;
 import org.springframework.core.io.buffer.DataBufferFactory;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ReactiveHttpOutputMessage;
-import org.springframework.http.client.reactive.ClientHttpRequest;
 import org.springframework.web.server.ServerWebExchange;
 
 /**
- * Implementation of {@link ClientHttpRequest} that saves body as a field.
- *
  * Created by shenhongxi on 2021/5/3.
  */
 public class CachedBodyOutputMessage implements ReactiveHttpOutputMessage {
