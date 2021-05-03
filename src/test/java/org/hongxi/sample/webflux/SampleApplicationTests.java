@@ -34,7 +34,7 @@ class SampleApplicationTests {
 				.expectStatus().isOk();
 	}
 
-//	@Test
+	@Test
 	public void shouldBeNotFound() {
 		webTestClient
 				.get()
@@ -48,7 +48,7 @@ class SampleApplicationTests {
 		shouldBeAbleToPostOrder();
 		webTestClient
 				.get()
-				.uri("/order/123456?userId=123")
+				.uri("/order/detail/123456?userId=123")
 				.accept(MediaType.APPLICATION_JSON)
 				.exchange()
 				.expectStatus().isOk()

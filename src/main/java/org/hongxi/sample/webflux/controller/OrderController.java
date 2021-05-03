@@ -24,7 +24,7 @@ public class OrderController {
         return orderRepository.save(order);
     }
 
-    @GetMapping("/{id}")
+    @GetMapping("/detail/{id}")
     public Mono<Order> findById(@PathVariable String id) {
         log.info("id: {}", id);
         Assert.isTrue(id.length() >= 6, "id length < 6");
