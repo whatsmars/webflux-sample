@@ -25,13 +25,7 @@ import java.util.Map;
 public class ModifyBodyFilter implements WebFilter {
 
     @Autowired
-    private Crypto crypto;
-    @Autowired
     private ServerCodecConfigurer codecConfigurer;
-
-    public ModifyBodyFilter(Crypto crypto) {
-        this.crypto = crypto;
-    }
 
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, WebFilterChain chain) {
@@ -42,7 +36,7 @@ public class ModifyBodyFilter implements WebFilter {
     }
 
     private Map<String, Object> decrypt(ServerWebExchange exchange, Map<String, Object> params) {
-        Map<String, Object> decrypted = crypto.decrypt(params);
+        Map<String, Object> decrypted = Crypto.decrypt(params);
         exchange.getAttributes().put(WebUtils.REQUEST_PARAMS_ATTR, decrypted);
         return decrypted;
     }
@@ -51,7 +45,7 @@ public class ModifyBodyFilter implements WebFilter {
         MediaType contentType = exchange.getRequest().getHeaders().getContentType();
         if (contentType != null && contentType.isCompatibleWith(MediaType.APPLICATION_JSON)) {
             ServerHttpRequest serverHttpRequest = new ModifiedServerHttpRequest(exchange.getRequest(), params);
-            ServerHttpResponse serverHttpResponse = new ModifiedServerHttpResponse(exchange, codecConfigurer.getReaders(), crypto);
+            ServerHttpResponse serverHttpResponse = new ModifiedServerHttpResponse(exchange, codecConfigurer.getReaders());
             return exchange.mutate().request(serverHttpRequest).response(serverHttpResponse).build();
         } else {
             return new ModifiedServerWebExchange(exchange, params);

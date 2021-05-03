@@ -1,14 +1,11 @@
 package org.hongxi.sample.webflux.support;
 
-import org.springframework.stereotype.Component;
-
 import java.util.HashMap;
 import java.util.Map;
 
 /**
  * Created by shenhongxi on 2021/4/29.
  */
-@Component
 public class Crypto {
 
     /**
@@ -16,7 +13,7 @@ public class Crypto {
      * @param params
      * @return
      */
-    public Map<String, Object> decrypt(Map<String, Object> params) {
+    public static Map<String, Object> decrypt(Map<String, Object> params) {
         Map<String, Object> decrypted = new HashMap<>(params);
         decrypted.put("start", System.currentTimeMillis());
         return decrypted;
@@ -27,7 +24,7 @@ public class Crypto {
      * @param data
      * @return
      */
-    public byte[] encrypt(byte[] data) {
+    public static byte[] encrypt(byte[] data) {
         Map<String, Object> result = JacksonUtils.deserialize(data, Map.class);
         result.put("end", System.currentTimeMillis());
         return JacksonUtils.serialize(result);

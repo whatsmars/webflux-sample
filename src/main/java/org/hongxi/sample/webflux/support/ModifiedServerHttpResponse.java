@@ -25,15 +25,12 @@ public class ModifiedServerHttpResponse extends ServerHttpResponseDecorator {
 
     private final ServerWebExchange exchange;
     private final List<HttpMessageReader<?>> messageReaders;
-    private final Crypto crypto;
 
     public ModifiedServerHttpResponse(ServerWebExchange exchange,
-                                      List<HttpMessageReader<?>> messageReaders,
-                                      Crypto crypto) {
+                                      List<HttpMessageReader<?>> messageReaders) {
         super(exchange.getResponse());
         this.exchange = exchange;
         this.messageReaders = messageReaders;
-        this.crypto = crypto;
     }
 
     @Override
@@ -45,9 +42,10 @@ public class ModifiedServerHttpResponse extends ServerHttpResponseDecorator {
         ClientResponse clientResponse = prepareClientResponse(body, httpHeaders);
 
         Mono<byte[]> modifiedBody = clientResponse.bodyToMono(byte[].class)
-                .flatMap(originalBody -> Mono.just(crypto.encrypt(originalBody)));
+                .flatMap(originalBody -> Mono.just(Crypto.encrypt(originalBody)));
 
-        BodyInserter<Mono<byte[]>, ReactiveHttpOutputMessage> bodyInserter = BodyInserters.fromPublisher(modifiedBody, byte[].class);
+        BodyInserter<Mono<byte[]>, ReactiveHttpOutputMessage> bodyInserter =
+                BodyInserters.fromPublisher(modifiedBody, byte[].class);
         CachedBodyOutputMessage outputMessage = new CachedBodyOutputMessage(exchange,
                 exchange.getResponse().getHeaders());
         return bodyInserter.insert(outputMessage, new BodyInserterContext()).then(Mono.defer(() -> {
