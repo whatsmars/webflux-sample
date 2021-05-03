@@ -22,6 +22,10 @@ public class SessionAuthFilter implements WebFilter {
 
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, WebFilterChain chain) {
+        if (exchange.getAttribute(WebUtils.URI_PATTERN_ATTR) == null) {
+            return chain.filter(exchange);
+        }
+
         SessionContext sessionContext = exchange.getAttribute(WebUtils.SESSION_CONTEXT_ATTR);
         if (sessionContext == null) {
             throw new BusinessException(403, "请先登录");

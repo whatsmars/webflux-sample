@@ -38,9 +38,9 @@ public class ModifiedServerHttpResponse extends ServerHttpResponseDecorator {
         HttpHeaders httpHeaders = new HttpHeaders();
         httpHeaders.setContentType(MediaType.APPLICATION_JSON);
 
-        // should use ServerResponse
+        // 这里只是借用 ClientResponse 这个类获取修改之前的 body
+        // server 端最终返回的是 ServerResponse/ServerHttpResponse
         ClientResponse clientResponse = prepareClientResponse(body, httpHeaders);
-
         Mono<byte[]> modifiedBody = clientResponse.bodyToMono(byte[].class)
                 .flatMap(originalBody -> Mono.just(Crypto.encrypt(originalBody)));
 
