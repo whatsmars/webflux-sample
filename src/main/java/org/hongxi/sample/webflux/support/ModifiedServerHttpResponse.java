@@ -4,6 +4,7 @@ import org.reactivestreams.Publisher;
 import org.springframework.core.io.buffer.DataBuffer;
 import org.springframework.core.io.buffer.DataBufferUtils;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ReactiveHttpOutputMessage;
 import org.springframework.http.codec.HttpMessageReader;
@@ -40,6 +41,7 @@ public class ModifiedServerHttpResponse extends ServerHttpResponseDecorator {
         HttpHeaders httpHeaders = new HttpHeaders();
         httpHeaders.setContentType(MediaType.APPLICATION_JSON);
 
+        // should use ServerResponse
         ClientResponse clientResponse = prepareClientResponse(body, httpHeaders);
 
         Mono<byte[]> modifiedBody = clientResponse.bodyToMono(byte[].class)
@@ -60,7 +62,7 @@ public class ModifiedServerHttpResponse extends ServerHttpResponseDecorator {
     }
 
     private ClientResponse prepareClientResponse(Publisher<? extends DataBuffer> body, HttpHeaders httpHeaders) {
-        ClientResponse.Builder builder = ClientResponse.create(getDelegate().getStatusCode(), messageReaders);
+        ClientResponse.Builder builder = ClientResponse.create(HttpStatus.OK, messageReaders);
         return builder.headers(headers -> headers.putAll(httpHeaders)).body(Flux.from(body)).build();
     }
 }
