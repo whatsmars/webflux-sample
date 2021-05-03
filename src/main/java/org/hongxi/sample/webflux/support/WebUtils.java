@@ -10,7 +10,7 @@ import java.util.*;
 public abstract class WebUtils {
 
     public static final String START_TIMESTAMP_ATTR = qualify("startTimestamp");
-    public static final String URI_PATTERN_ATTR = qualify("uriPattern");
+    public static final String PATH_PATTERN_ATTR = qualify("pathPattern");
     public static final String SHOULD_NOT_FILTER_ATTR = qualify("shouldNotFilter");
     public static final String SESSION_CONTEXT_ATTR = qualify("sessionContext");
     public static final String REQUEST_PARAMS_ATTR = qualify("requestParams");

@@ -2,8 +2,6 @@ package org.hongxi.sample.webflux.filter;
 
 import lombok.extern.slf4j.Slf4j;
 import org.hongxi.sample.webflux.support.WebUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.annotation.Order;
@@ -32,12 +30,12 @@ import java.util.Set;
 @Component
 public class MonitorFilter implements WebFilter, InitializingBean {
 
-    private static final String UNKNOWN_URI = "/unknown";
+    private static final String UNKNOWN_PATH = "/unknown";
 
-    // 针对只有一个uri映射到的method
-    // key: methodSign value: uriPattern
-    private final Map<String, String> uriPatterns = new HashMap<>(128);
-    // 多个uri映射到同一个method  @RequestMapping({"/hi", "/hello"})
+    // 针对只有一个path映射到的method
+    // key: methodSign value: pathPattern
+    private final Map<String, String> pathPatterns = new HashMap<>(128);
+    // 多个path映射到同一个method  @RequestMapping({"/hi", "/hello"})
     // key: methodSign value: RequestMappingInfo
     private final Map<String, RequestMappingInfo> requestMappings = new HashMap<>();
     @Autowired
@@ -45,6 +43,9 @@ public class MonitorFilter implements WebFilter, InitializingBean {
 
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, WebFilterChain chain) {
+        if (exchange.getAttributeOrDefault(WebUtils.SHOULD_NOT_FILTER_ATTR, false)) {
+            return chain.filter(exchange);
+        }
         preHandle(exchange);
         return chain.filter(exchange)
                 .doOnSuccess(signal -> postHandle(exchange, null))
@@ -54,12 +55,11 @@ public class MonitorFilter implements WebFilter, InitializingBean {
     private void preHandle(ServerWebExchange exchange) {
         log.info("preHandle");
         exchange.getAttributes().put(WebUtils.START_TIMESTAMP_ATTR, System.currentTimeMillis());
-        String uriPattern = getUriPattern(exchange);
-        if (uriPattern != null && !uriPattern.equals(UNKNOWN_URI)) {
-            exchange.getAttributes().put(WebUtils.URI_PATTERN_ATTR, uriPattern);
+        String pathPattern = getPathPattern(exchange);
+        if (pathPattern != null && !pathPattern.equals(UNKNOWN_PATH)) {
+            exchange.getAttributes().put(WebUtils.PATH_PATTERN_ATTR, pathPattern);
         }
-//        throw new RuntimeException("test exception");
-        // you can record monitor data
+        // 可以记录接口维度的耗时、调用次数、异常率等数据
     }
 
     private void postHandle(ServerWebExchange exchange, Throwable throwable) {
@@ -67,48 +67,48 @@ public class MonitorFilter implements WebFilter, InitializingBean {
         Long start = exchange.getAttribute(WebUtils.START_TIMESTAMP_ATTR);
         if (start != null) {
             long cost = System.currentTimeMillis() - start;
-            log.info("uri: {}, cost: {}, error: {}",
+            log.info("path: {}, cost: {}, error: {}",
                     exchange.getRequest().getPath(), cost, throwable != null);
         }
     }
 
-    private void preLoadAllUris() {
+    private void preLoadAllPaths() {
         Map<RequestMappingInfo, HandlerMethod> requestMapInfoHandlerMap = requestMappingHandlerMapping.getHandlerMethods();
         for (RequestMappingInfo info : requestMapInfoHandlerMap.keySet()) {
             PatternsRequestCondition patternsRequestCondition = info.getPatternsCondition();
             Set<PathPattern> patterns = patternsRequestCondition.getPatterns();
             String methodSignal = requestMapInfoHandlerMap.get(info).getMethod().toGenericString();
             if (patterns.size() == 1) {
-                uriPatterns.put(methodSignal, patterns.iterator().next().getPatternString());
+                pathPatterns.put(methodSignal, patterns.iterator().next().getPatternString());
             } else {
                 requestMappings.put(methodSignal, info);
             }
         }
     }
 
-    private String getUriPattern(ServerWebExchange exchange) {
-        String uri = exchange.getRequest().getPath().value();
-        if (!StringUtils.hasLength(uri)) {
-            return UNKNOWN_URI;
+    private String getPathPattern(ServerWebExchange exchange) {
+        String path = exchange.getRequest().getPath().value();
+        if (!StringUtils.hasLength(path)) {
+            return UNKNOWN_PATH;
         }
-        if (uriPatterns.containsValue(uri)) {
-            return uri;
+        if (pathPatterns.containsValue(path)) {
+            return path;
         }
         try {
             Mono<Object> handlerMono = requestMappingHandlerMapping.getHandler(exchange);
-            String handlerKey = uri + "_handler";
+            String handlerKey = path + "_handler";
             handlerMono.subscribe(handler -> exchange.getAttributes().put(handlerKey, handler));
             Object handler = exchange.getAttribute(handlerKey);
             if (handler == null) {
-                return UNKNOWN_URI;
+                return UNKNOWN_PATH;
             }
             exchange.getAttributes().remove(handlerKey);
             if (handler instanceof HandlerMethod) {
                 HandlerMethod handlerMethod = (HandlerMethod) handler;
                 String methodSign = handlerMethod.getMethod().toGenericString();
-                String uriPattern = uriPatterns.get(methodSign);
-                if (StringUtils.hasLength(uriPattern)) {
-                    return uriPattern;
+                String pathPattern = pathPatterns.get(methodSign);
+                if (StringUtils.hasLength(pathPattern)) {
+                    return pathPattern;
                 }
                 if (requestMappings.containsKey(methodSign)) {
                     RequestMappingInfo mappingInfo = requestMappings.get(methodSign);
@@ -120,13 +120,13 @@ public class MonitorFilter implements WebFilter, InitializingBean {
                 }
             }
         } catch (Exception e) {
-            log.warn("get uri pattern error, {}", e.getClass());
+            log.warn("get path pattern error, {}", e.getClass());
         }
-        return UNKNOWN_URI;
+        return UNKNOWN_PATH;
     }
 
     @Override
     public void afterPropertiesSet() throws Exception {
-        preLoadAllUris();
+        preLoadAllPaths();
     }
 }
