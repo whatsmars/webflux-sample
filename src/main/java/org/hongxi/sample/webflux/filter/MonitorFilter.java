@@ -107,7 +107,7 @@ public class MonitorFilter implements WebFilter, InitializingBean {
                 HandlerMethod handlerMethod = (HandlerMethod) handler;
                 String methodSign = handlerMethod.getMethod().toGenericString();
                 String uriPattern = uriPatterns.get(methodSign);
-                if (!StringUtils.hasLength(uriPattern)) {
+                if (StringUtils.hasLength(uriPattern)) {
                     return uriPattern;
                 }
                 if (requestMappings.containsKey(methodSign)) {
