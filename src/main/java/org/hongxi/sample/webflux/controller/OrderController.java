@@ -33,7 +33,9 @@ public class OrderController {
     }
 
     @PostMapping("/delete")
-    public Mono<Void> deleteById(@RequestParam String id) {
+    public Mono<Order> deleteById(@RequestParam String id,
+                                 @RequestParam Long start) {
+        log.info("start: {}", start);
         return orderRepository.deleteById(id);
     }
 }

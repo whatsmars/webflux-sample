@@ -59,6 +59,11 @@ public class ModifiedServerHttpResponse extends ServerHttpResponseDecorator {
         }));
     }
 
+    @Override
+    public Mono<Void> writeAndFlushWith(Publisher<? extends Publisher<? extends DataBuffer>> body) {
+        return writeWith(Flux.from(body).flatMapSequential(p -> p));
+    }
+
     private ClientResponse prepareClientResponse(Publisher<? extends DataBuffer> body, HttpHeaders httpHeaders) {
         ClientResponse.Builder builder = ClientResponse.create(HttpStatus.OK, messageReaders);
         return builder.headers(headers -> headers.putAll(httpHeaders)).body(Flux.from(body)).build();

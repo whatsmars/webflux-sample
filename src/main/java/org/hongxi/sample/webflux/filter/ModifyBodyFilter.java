@@ -46,7 +46,7 @@ public class ModifyBodyFilter implements WebFilter {
 
     private ServerWebExchange decorate(ServerWebExchange exchange, Map<String, Object> params) {
         MediaType contentType = exchange.getRequest().getHeaders().getContentType();
-        if (contentType != null && contentType.isCompatibleWith(MediaType.APPLICATION_JSON)) {
+        if (contentType == null || contentType.isCompatibleWith(MediaType.APPLICATION_JSON)) {
             ServerHttpRequest serverHttpRequest = new ModifiedServerHttpRequest(exchange.getRequest(), params);
             ServerHttpResponse serverHttpResponse = new ModifiedServerHttpResponse(exchange, codecConfigurer.getReaders());
             return exchange.mutate().request(serverHttpRequest).response(serverHttpResponse).build();
