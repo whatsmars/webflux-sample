@@ -18,9 +18,8 @@ import java.util.Map;
 public abstract class ParamUtils {
 
     @SuppressWarnings("rawtypes")
-    private static final ThreadLocal<HttpMessageReader> reader = ThreadLocal.withInitial(
-            () -> new DecoderHttpMessageReader<>(new Jackson2JsonDecoder())
-    );
+    private static final HttpMessageReader messageReader =
+            new DecoderHttpMessageReader<>(new Jackson2JsonDecoder());
 
     @SuppressWarnings("unchecked")
     public static Mono<Map<String, Object>> from(ServerWebExchange exchange) {
@@ -32,7 +31,7 @@ public abstract class ParamUtils {
         Mono<Map<String, Object>> params;
         MediaType contentType = exchange.getRequest().getHeaders().getContentType();
         if (contentType != null && contentType.isCompatibleWith(MediaType.APPLICATION_JSON)) {
-            params = (Mono<Map<String, Object>>) reader.get().readMono(
+            params = (Mono<Map<String, Object>>) messageReader.readMono(
                     ResolvableType.forType(Map.class), exchange.getRequest(), Collections.emptyMap());
         } else {
             params = WebExchangeDataBinder.extractValuesToBind(exchange);

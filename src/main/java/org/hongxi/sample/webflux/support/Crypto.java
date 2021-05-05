@@ -1,6 +1,8 @@
 package org.hongxi.sample.webflux.support;
 
-import java.util.HashMap;
+import org.springframework.util.MultiValueMap;
+
+import java.util.Collections;
 import java.util.Map;
 
 /**
@@ -10,22 +12,31 @@ public class Crypto {
 
     /**
      * 模拟解密逻辑：添加一个请求参数 start
-     * @param params
+     * @param requestBody
      * @return
      */
-    public static Map<String, Object> decrypt(Map<String, Object> params) {
-        Map<String, Object> decrypted = new HashMap<>(params);
-        decrypted.put("start", System.currentTimeMillis());
-        return decrypted;
+    public static Map<String, Object> decrypt(Map<String, Object> requestBody) {
+        requestBody.put("start", System.currentTimeMillis());
+        return requestBody;
+    }
+
+    /**
+     * 模拟解密逻辑：添加一个请求参数 start
+     * @param formData
+     * @return
+     */
+    public static MultiValueMap<String, String> decrypt(MultiValueMap<String, String> formData) {
+        formData.put("start", Collections.singletonList(String.valueOf(System.currentTimeMillis())));
+        return formData;
     }
 
     /**
      * 模拟加密逻辑：添加一个响应参数 end
-     * @param data
+     * @param responseBody
      * @return
      */
-    public static byte[] encrypt(byte[] data) {
-        Map<String, Object> result = JacksonUtils.deserialize(data, Map.class);
+    public static byte[] encrypt(byte[] responseBody) {
+        Map<String, Object> result = JacksonUtils.deserialize(responseBody, Map.class);
         result.put("end", System.currentTimeMillis());
         return JacksonUtils.serialize(result);
     }

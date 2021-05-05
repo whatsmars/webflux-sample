@@ -33,25 +33,22 @@ public class ModifyBodyFilter implements WebFilter {
             return chain.filter(exchange);
         }
         return ParamUtils.from(exchange)
-                .map(params -> decrypt(exchange, params))
                 .map(params -> decorate(exchange, params))
                 .flatMap(chain::filter);
     }
 
-    private Map<String, Object> decrypt(ServerWebExchange exchange, Map<String, Object> params) {
-        Map<String, Object> decrypted = Crypto.decrypt(params);
-        exchange.getAttributes().put(WebUtils.REQUEST_PARAMS_ATTR, decrypted);
-        return decrypted;
-    }
-
     private ServerWebExchange decorate(ServerWebExchange exchange, Map<String, Object> params) {
+        ServerHttpResponse serverHttpResponse = new ModifiedServerHttpResponse(exchange, codecConfigurer.getReaders());
+
         MediaType contentType = exchange.getRequest().getHeaders().getContentType();
-        if (contentType == null || contentType.isCompatibleWith(MediaType.APPLICATION_JSON)) {
+        if (contentType != null && contentType.isCompatibleWith(MediaType.APPLICATION_JSON)) {
+            Map<String, Object> decrypted = Crypto.decrypt(params);
+            exchange.getAttributes().put(WebUtils.REQUEST_PARAMS_ATTR, decrypted);
             ServerHttpRequest serverHttpRequest = new ModifiedServerHttpRequest(exchange.getRequest(), params);
-            ServerHttpResponse serverHttpResponse = new ModifiedServerHttpResponse(exchange, codecConfigurer.getReaders());
             return exchange.mutate().request(serverHttpRequest).response(serverHttpResponse).build();
-        } else {
-            return new ModifiedServerWebExchange(exchange, params);
         }
+
+        ModifiedServerWebExchange serverWebExchange = new ModifiedServerWebExchange(exchange);
+        return serverWebExchange.mutate().response(serverHttpResponse).build();
     }
 }

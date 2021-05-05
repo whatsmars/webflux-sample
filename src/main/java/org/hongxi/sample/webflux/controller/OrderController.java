@@ -6,6 +6,7 @@ import org.hongxi.sample.webflux.model.Order;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.Assert;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
 
 /**
@@ -33,9 +34,13 @@ public class OrderController {
     }
 
     @PostMapping("/delete")
-    public Mono<Order> deleteById(@RequestParam String id,
-                                 @RequestParam Long start) {
-        log.info("start: {}", start);
-        return orderRepository.deleteById(id);
+    public Mono<Order> deleteById(@RequestParam String userId,
+                                  ServerWebExchange exchange) {
+        log.info("userId: {}", userId);
+        return exchange.getFormData().
+                flatMap(data -> {
+                    log.info("start: {}", data.getFirst("start"));
+                    return orderRepository.deleteById(data.getFirst("id"));
+                });
     }
 }
