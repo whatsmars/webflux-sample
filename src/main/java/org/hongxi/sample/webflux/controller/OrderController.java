@@ -33,6 +33,17 @@ public class OrderController {
         return orderRepository.findById(id);
     }
 
+    /**
+     * The Servlet API “request parameter” concept conflates query parameters,
+     * form data, and multiparts into one. However, in WebFlux, each is accessed
+     * individually through ServerWebExchange. While @RequestParam binds to query
+     * parameters only, you can use data binding to apply query parameters,
+     * form data, and multiparts to a command object.
+     *
+     * @param userId
+     * @param exchange
+     * @return
+     */
     @PostMapping("/delete")
     public Mono<Order> deleteById(@RequestParam String userId,
                                   ServerWebExchange exchange) {
