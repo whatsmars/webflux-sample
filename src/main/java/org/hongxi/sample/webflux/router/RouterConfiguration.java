@@ -16,7 +16,7 @@ import static org.springframework.web.reactive.function.server.RouterFunctions.r
 /**
  * Created by shenhongxi on 2021/4/22.
  */
-//@Configuration
+@Configuration
 public class RouterConfiguration {
 
     final ServerRedirectHandler serverRedirectHandler = new ServerRedirectHandler();
@@ -24,7 +24,7 @@ public class RouterConfiguration {
     @Bean
     public RouterFunction<ServerResponse> routes(OrderHandler orderHandler) {
         return
-                nest(path("/order"),
+                nest(path("/func/order"),
                         nest(accept(APPLICATION_JSON),
                                 route(GET("/{id}"), orderHandler::get)
                                         .andRoute(method(HttpMethod.GET), orderHandler::list)
