@@ -8,8 +8,8 @@ import org.springframework.web.server.ServerWebExchange;
 public abstract class WebUtils {
 
     public static boolean shouldNotFilter(ServerWebExchange exchange) {
-        return exchange.getAttributeOrDefault(WebUtils.SHOULD_NOT_FILTER_ATTR, false)
-                || exchange.getAttribute(WebUtils.PATH_PATTERN_ATTR) == null;
+        return exchange.getAttributeOrDefault(WebUtils.SHOULD_NOT_FILTER_ATTR,
+                exchange.getAttribute(WebUtils.PATH_PATTERN_ATTR) == null);
     }
 
     public static final String START_TIMESTAMP_ATTR = qualify("startTimestamp");
