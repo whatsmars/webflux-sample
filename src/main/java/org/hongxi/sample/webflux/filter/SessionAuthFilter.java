@@ -22,7 +22,7 @@ public class SessionAuthFilter implements WebFilter {
 
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, WebFilterChain chain) {
-        if (exchange.getAttribute(WebUtils.PATH_PATTERN_ATTR) == null) {
+        if (WebUtils.shouldNotFilter(exchange)) {
             return chain.filter(exchange);
         }
 

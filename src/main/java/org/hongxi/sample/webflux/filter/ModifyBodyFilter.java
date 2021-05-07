@@ -29,7 +29,7 @@ public class ModifyBodyFilter implements WebFilter {
 
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, WebFilterChain chain) {
-        if (exchange.getAttributeOrDefault(WebUtils.SHOULD_NOT_FILTER_ATTR, false)) {
+        if (WebUtils.shouldNotFilter(exchange)) {
             return chain.filter(exchange);
         }
         return ParamUtils.from(exchange)
