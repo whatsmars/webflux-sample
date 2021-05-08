@@ -38,6 +38,10 @@ public class ModifyBodyFilter implements WebFilter {
     }
 
     private ServerWebExchange decorate(ServerWebExchange exchange, Map<String, Object> params) {
+        if (params.isEmpty()) {
+            return exchange;
+        }
+
         ServerHttpResponse serverHttpResponse = new ModifiedServerHttpResponse(exchange, codecConfigurer.getReaders());
 
         MediaType contentType = exchange.getRequest().getHeaders().getContentType();
@@ -48,7 +52,7 @@ public class ModifyBodyFilter implements WebFilter {
             return exchange.mutate().request(serverHttpRequest).response(serverHttpResponse).build();
         }
 
-        ModifiedServerWebExchange serverWebExchange = new ModifiedServerWebExchange(exchange);
+        ServerWebExchange serverWebExchange = new ModifiedServerWebExchange(exchange);
         return serverWebExchange.mutate().response(serverHttpResponse).build();
     }
 }
