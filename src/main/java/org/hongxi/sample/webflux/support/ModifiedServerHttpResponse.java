@@ -16,6 +16,7 @@ import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 /**
@@ -25,6 +26,8 @@ public class ModifiedServerHttpResponse extends ServerHttpResponseDecorator {
 
     private final ServerWebExchange exchange;
     private final List<HttpMessageReader<?>> messageReaders;
+
+    private String body;
 
     public ModifiedServerHttpResponse(ServerWebExchange exchange,
                                       List<HttpMessageReader<?>> messageReaders) {
@@ -42,7 +45,10 @@ public class ModifiedServerHttpResponse extends ServerHttpResponseDecorator {
         // server 端最终返回的是 ServerResponse/ServerHttpResponse
         ClientResponse clientResponse = prepareClientResponse(body, httpHeaders);
         Mono<byte[]> modifiedBody = clientResponse.bodyToMono(byte[].class)
-                .flatMap(originalBody -> Mono.just(Crypto.encrypt(originalBody)));
+                .flatMap(originalBody -> {
+                    this.body = new String(originalBody, StandardCharsets.UTF_8);
+                    return Mono.just(Crypto.encrypt(originalBody));
+                });
 
         BodyInserter<Mono<byte[]>, ReactiveHttpOutputMessage> bodyInserter =
                 BodyInserters.fromPublisher(modifiedBody, byte[].class);
@@ -62,6 +68,13 @@ public class ModifiedServerHttpResponse extends ServerHttpResponseDecorator {
     @Override
     public Mono<Void> writeAndFlushWith(Publisher<? extends Publisher<? extends DataBuffer>> body) {
         return writeWith(Flux.from(body).flatMapSequential(p -> p));
+    }
+
+    /**
+     * @return body json string
+     */
+    public String bodyString() {
+        return this.body;
     }
 
     private ClientResponse prepareClientResponse(Publisher<? extends DataBuffer> body, HttpHeaders httpHeaders) {

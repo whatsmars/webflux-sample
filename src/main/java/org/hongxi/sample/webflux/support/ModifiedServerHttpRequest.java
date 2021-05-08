@@ -7,6 +7,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.http.server.reactive.ServerHttpRequestDecorator;
 import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
 import java.util.Map;
 
@@ -46,5 +47,12 @@ public class ModifiedServerHttpRequest extends ServerHttpRequestDecorator {
         headers.addAll(super.getHeaders());
         headers.setContentLength(contentLength);
         return headers;
+    }
+
+    /**
+     * @return body json string
+     */
+    public String bodyString() {
+        return JacksonUtils.toJson(this.params);
     }
 }

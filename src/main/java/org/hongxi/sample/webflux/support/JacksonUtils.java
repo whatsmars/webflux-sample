@@ -13,6 +13,23 @@ public abstract class JacksonUtils {
 
     private static final ObjectMapper objectMapper = new ObjectMapper();
 
+    public static <T> String toJson(T obj) {
+        if (obj == null) return null;
+        try {
+            return objectMapper.writeValueAsString(obj);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    public static <T> T fromJson(String src, Class<T> clazz) {
+        try {
+            return objectMapper.readValue(src, clazz);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     public static <T> byte[] serialize(T obj) {
         if (obj == null) return null;
         try {

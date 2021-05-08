@@ -60,7 +60,7 @@ class SampleApplicationTests {
 		shouldBeAbleToPostOrder();
 		webTestClient
 				.post()
-				.uri("/order/delete?userId=123")
+				.uri("/order/delete?userId=123&name=lily")
 				.contentType(MediaType.APPLICATION_FORM_URLENCODED)
 				.body(BodyInserters.fromFormData("id", "123456"))
 				.accept(MediaType.APPLICATION_JSON)
