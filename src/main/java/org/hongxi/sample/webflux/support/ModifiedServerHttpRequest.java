@@ -7,37 +7,27 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.http.server.reactive.ServerHttpRequestDecorator;
 import reactor.core.publisher.Flux;
-import reactor.core.publisher.Mono;
 
-import java.util.Map;
+import java.nio.charset.StandardCharsets;
 
 /**
  * Created by shenhongxi on 2021/4/29.
  */
 public class ModifiedServerHttpRequest extends ServerHttpRequestDecorator {
 
-    private Map<String, Object> params;
+    private final byte[] rawBody;
 
-    private Flux<DataBuffer> body;
-
-    private long contentLength;
-
-    public ModifiedServerHttpRequest(ServerHttpRequest delegate, Map<String, Object> params) {
+    public ModifiedServerHttpRequest(ServerHttpRequest delegate, byte[] rawBody) {
         super(delegate);
-        this.params = params;
-
-        byte[] bytes = JacksonUtils.serialize(params);
-        contentLength = bytes.length;
-
-        NettyDataBufferFactory nettyDataBufferFactory = new NettyDataBufferFactory(ByteBufAllocator.DEFAULT);
-        DataBuffer buffer = nettyDataBufferFactory.allocateBuffer(bytes.length);
-        buffer.write(bytes);
-        body = Flux.just(buffer);
+        this.rawBody = rawBody;
     }
 
     @Override
     public Flux<DataBuffer> getBody() {
-        return body;
+        NettyDataBufferFactory nettyDataBufferFactory = new NettyDataBufferFactory(ByteBufAllocator.DEFAULT);
+        DataBuffer buffer = nettyDataBufferFactory.allocateBuffer(this.rawBody.length);
+        buffer.write(this.rawBody);
+        return Flux.just(buffer);
     }
 
     @Override
@@ -45,7 +35,7 @@ public class ModifiedServerHttpRequest extends ServerHttpRequestDecorator {
         // 必须 new，不能直接操作 super.getHeaders()（readonly）
         HttpHeaders headers = new HttpHeaders();
         headers.addAll(super.getHeaders());
-        headers.setContentLength(contentLength);
+        headers.setContentLength(this.rawBody.length);
         return headers;
     }
 
@@ -53,6 +43,6 @@ public class ModifiedServerHttpRequest extends ServerHttpRequestDecorator {
      * @return body json string
      */
     public String bodyString() {
-        return JacksonUtils.toJson(this.params);
+        return new String(rawBody, StandardCharsets.UTF_8);
     }
 }
