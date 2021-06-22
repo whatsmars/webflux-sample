@@ -25,9 +25,7 @@ public class ModifiedServerHttpRequest extends ServerHttpRequestDecorator {
     @Override
     public Flux<DataBuffer> getBody() {
         NettyDataBufferFactory nettyDataBufferFactory = new NettyDataBufferFactory(ByteBufAllocator.DEFAULT);
-        DataBuffer buffer = nettyDataBufferFactory.allocateBuffer(this.rawBody.length);
-        buffer.write(this.rawBody);
-        return Flux.just(buffer);
+        return Flux.just(nettyDataBufferFactory.wrap(this.rawBody));
     }
 
     @Override
