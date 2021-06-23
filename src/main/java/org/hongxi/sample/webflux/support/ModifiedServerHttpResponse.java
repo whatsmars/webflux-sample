@@ -44,11 +44,6 @@ public class ModifiedServerHttpResponse extends ServerHttpResponseDecorator {
         return super.writeWith(modifiedBody);
     }
 
-    @Override
-    public Mono<Void> writeAndFlushWith(Publisher<? extends Publisher<? extends DataBuffer>> body) {
-        return writeWith(Flux.from(body).flatMapSequential(p -> p));
-    }
-
     /**
      * @return body json string
      */
