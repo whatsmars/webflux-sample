@@ -2,15 +2,11 @@ package org.hongxi.sample.webflux.support;
 
 import org.reactivestreams.Publisher;
 import org.springframework.core.io.buffer.DataBuffer;
-import org.springframework.core.io.buffer.DataBufferUtils;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
-import org.springframework.http.ReactiveHttpOutputMessage;
 import org.springframework.http.codec.HttpMessageReader;
 import org.springframework.http.server.reactive.ServerHttpResponseDecorator;
-import org.springframework.web.reactive.function.BodyInserter;
-import org.springframework.web.reactive.function.BodyInserters;
 import org.springframework.web.reactive.function.client.ClientResponse;
 import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Flux;
@@ -24,7 +20,6 @@ import java.util.List;
  */
 public class ModifiedServerHttpResponse extends ServerHttpResponseDecorator {
 
-    private final ServerWebExchange exchange;
     private final List<HttpMessageReader<?>> messageReaders;
 
     private String body;
@@ -32,7 +27,6 @@ public class ModifiedServerHttpResponse extends ServerHttpResponseDecorator {
     public ModifiedServerHttpResponse(ServerWebExchange exchange,
                                       List<HttpMessageReader<?>> messageReaders) {
         super(exchange.getResponse());
-        this.exchange = exchange;
         this.messageReaders = messageReaders;
     }
 
