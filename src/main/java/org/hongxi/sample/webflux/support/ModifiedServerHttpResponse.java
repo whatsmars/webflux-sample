@@ -32,12 +32,9 @@ public class ModifiedServerHttpResponse extends ServerHttpResponseDecorator {
 
     @Override
     public Mono<Void> writeWith(Publisher<? extends DataBuffer> body) {
-        HttpHeaders httpHeaders = new HttpHeaders();
-        httpHeaders.setContentType(MediaType.APPLICATION_JSON);
-
         // 这里只是借用 ClientResponse 这个类获取修改之前的 body
         // server 端最终返回的是 ServerResponse/ServerHttpResponse
-        ClientResponse clientResponse = prepareClientResponse(body, httpHeaders);
+        ClientResponse clientResponse = prepareClientResponse(body);
         Mono<DataBuffer> modifiedBody = clientResponse.bodyToMono(byte[].class)
                 .map(originalBody -> {
                     this.body = new String(originalBody, StandardCharsets.UTF_8);
@@ -59,8 +56,10 @@ public class ModifiedServerHttpResponse extends ServerHttpResponseDecorator {
         return this.body;
     }
 
-    private ClientResponse prepareClientResponse(Publisher<? extends DataBuffer> body, HttpHeaders httpHeaders) {
+    private ClientResponse prepareClientResponse(Publisher<? extends DataBuffer> body) {
         ClientResponse.Builder builder = ClientResponse.create(HttpStatus.OK, messageReaders);
+        HttpHeaders httpHeaders = new HttpHeaders();
+        httpHeaders.setContentType(MediaType.APPLICATION_JSON);
         return builder.headers(headers -> headers.putAll(httpHeaders)).body(Flux.from(body)).build();
     }
 }
