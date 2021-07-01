@@ -4,6 +4,7 @@ import io.netty.buffer.ByteBufAllocator;
 import org.springframework.core.io.buffer.DataBuffer;
 import org.springframework.core.io.buffer.NettyDataBufferFactory;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.http.server.reactive.ServerHttpRequestDecorator;
 import org.springframework.util.MultiValueMap;
@@ -11,6 +12,7 @@ import org.springframework.util.MultiValueMapAdapter;
 import reactor.core.publisher.Flux;
 
 import java.nio.charset.StandardCharsets;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -49,10 +51,9 @@ public class ModifiedServerHttpRequest extends ServerHttpRequestDecorator {
 
     @Override
     public HttpHeaders getHeaders() {
-        // 必须 new，不能直接操作 super.getHeaders()（readonly）
-        HttpHeaders headers = new HttpHeaders();
-        headers.addAll(super.getHeaders());
+        HttpHeaders headers = HttpHeaders.writableHttpHeaders(super.getHeaders());
         headers.setContentLength(this.rawBody.length);
+        headers.setContentType(MediaType.APPLICATION_JSON);
         return headers;
     }
 
