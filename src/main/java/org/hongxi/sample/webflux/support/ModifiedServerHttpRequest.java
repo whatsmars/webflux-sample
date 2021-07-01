@@ -1,14 +1,12 @@
 package org.hongxi.sample.webflux.support;
 
-import io.netty.buffer.ByteBufAllocator;
 import org.springframework.core.io.buffer.DataBuffer;
-import org.springframework.core.io.buffer.NettyDataBufferFactory;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
-import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.http.server.reactive.ServerHttpRequestDecorator;
 import org.springframework.util.MultiValueMap;
 import org.springframework.util.MultiValueMapAdapter;
+import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Flux;
 
 import java.nio.charset.StandardCharsets;
@@ -21,10 +19,13 @@ import java.util.Map;
  */
 public class ModifiedServerHttpRequest extends ServerHttpRequestDecorator {
 
+    private final ServerWebExchange exchange;
+
     private final byte[] rawBody;
 
-    public ModifiedServerHttpRequest(ServerHttpRequest delegate, byte[] rawBody) {
-        super(delegate);
+    public ModifiedServerHttpRequest(ServerWebExchange exchange, byte[] rawBody) {
+        super(exchange.getRequest());
+        this.exchange = exchange;
         this.rawBody = rawBody;
     }
 
@@ -44,8 +45,7 @@ public class ModifiedServerHttpRequest extends ServerHttpRequestDecorator {
 
     @Override
     public Flux<DataBuffer> getBody() {
-        NettyDataBufferFactory nettyDataBufferFactory = new NettyDataBufferFactory(ByteBufAllocator.DEFAULT);
-        return Flux.just(nettyDataBufferFactory.wrap(this.rawBody));
+        return Flux.just(exchange.getResponse().bufferFactory().wrap(this.rawBody));
     }
 
     @Override
